@@ -467,3 +467,5 @@ public class MainWindow {
 // elo
 
 //benc
+
+//witam serdecznie wszytskich zgromadzonych
