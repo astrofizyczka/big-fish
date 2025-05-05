@@ -195,29 +195,31 @@ public class MainWindow {
         mainMenuFrame.setVisible(false);
     }
     
- // PANEL GÓRNY OKNA 1 Z TRÓJKĄTNYM WSKAŹNIKIEM SUWAKA
+    
     private JPanel createTopPanelOkno1(JFrame frameToClose) {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         int screenWidth = screenSize.width;
-        int panelHeight = screenSize.height / 8;
+        int screenHeight = screenSize.height;
+        int topPanelHeight = screenHeight / 8 + 30;
 
-        // Panel górny (napisy, suwak, licznik)
-        JPanel topPanel = new JPanel();
-        topPanel.setLayout(null);
+        // Główny panel
+        JPanel mainPanel = new JPanel(null);
+        mainPanel.setBounds(0, 0, screenWidth, screenHeight);
+
+        // ---------------- TOP PANEL ----------------
+        JPanel topPanel = new JPanel(null);
         topPanel.setBackground(new Color(203, 108, 230));
-        topPanel.setBounds(0, 0, screenWidth, panelHeight + 30);
+        topPanel.setBounds(0, 0, screenWidth, topPanelHeight);
 
-        // Panel na ikony rybek (nad suwakiem)
-        JPanel fishPanel = new JPanel();
-        fishPanel.setLayout(null);
-        fishPanel.setBackground(new Color(203, 108, 230)); // Ten sam kolor co topPanel
+        // Panel z ikonkami rybek
+        JPanel fishPanel = new JPanel(null);
+        fishPanel.setBackground(new Color(203, 108, 230));
         fishPanel.setBounds(0, 0, screenWidth, 70);
 
-        // Ikony rybek
         String[] fishIcons = {
-                "src/projekt_java/Mała_ryba.png",
-                "src/projekt_java/Średnia_ryba.png",
-                "src/projekt_java/Duża_ryba.png"
+            "src/projekt_java/Mała_ryba.png",
+            "src/projekt_java/Średnia_ryba.png",
+            "src/projekt_java/Duża_ryba.png"
         };
 
         int iconSize = 60;
@@ -233,51 +235,35 @@ public class MainWindow {
             fishButton.setBounds(iconStartX + i * (iconSize + spacing), iconY, iconSize, iconSize);
             fishPanel.add(fishButton);
         }
-
-        topPanel.add(fishPanel); // Dodanie panelu z rybkami do topPanel
+        topPanel.add(fishPanel);
 
         // Przycisk "Menu"
-        ImageIcon menuIcon = new ImageIcon("src/projekt_java/menu.png");
-        JButton menuButton = new JButton(scaleIcon(menuIcon, 120, 50));
+        JButton menuButton = new JButton(scaleIcon(new ImageIcon("src/projekt_java/menu.png"), 120, 50));
         makeButtonTransparent(menuButton);
-        menuButton.setBounds(20, (panelHeight - 50) / 2 + 60, 120, 50);
+        menuButton.setBounds(20, topPanelHeight - 60, 120, 50);
         menuButton.addActionListener(e -> {
             frameToClose.dispose();
             mainMenuFrame.setVisible(true);
         });
         topPanel.add(menuButton);
 
-        // Obrazek "Wzrost rybki" po lewej stronie suwaka
-        ImageIcon growthIcon = new ImageIcon("src/projekt_java/wzrost_rybki.png");
-        JLabel growthLabel = new JLabel(scaleIcon(growthIcon, 150, 50));
-        growthLabel.setBounds(screenWidth / 3 - 200, (panelHeight - 50) / 2 + 60, 150, 50);
+        // Wzrost rybki
+        JLabel growthLabel = new JLabel(scaleIcon(new ImageIcon("src/projekt_java/wzrost_rybki.png"), 150, 50));
+        growthLabel.setBounds(screenWidth / 3 - 200, topPanelHeight - 60, 150, 50);
         topPanel.add(growthLabel);
 
-        // Suwak
-        int sliderWidth = screenWidth / 3;
-        int sliderX = screenWidth / 3;
-        int sliderY = (panelHeight - 50) / 2 + 60;
-
+        // Suwak wzrostu
         JSlider growthSlider = new JSlider(0, 100, 50);
-        growthSlider.setBounds(sliderX, sliderY, sliderWidth, 40);
+        growthSlider.setBounds(screenWidth / 3, topPanelHeight - 60, screenWidth / 3, 40);
         growthSlider.setBackground(Color.BLACK);
-
         growthSlider.setUI(new BasicSliderUI(growthSlider) {
             @Override
             public void paintThumb(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g2.setColor(Color.RED);
-                int[] xPoints = {
-                        thumbRect.x + thumbRect.width / 2,
-                        thumbRect.x,
-                        thumbRect.x + thumbRect.width
-                };
-                int[] yPoints = {
-                        thumbRect.y + thumbRect.height,
-                        thumbRect.y,
-                        thumbRect.y
-                };
+                int[] xPoints = {thumbRect.x + thumbRect.width / 2, thumbRect.x, thumbRect.x + thumbRect.width};
+                int[] yPoints = {thumbRect.y + thumbRect.height, thumbRect.y, thumbRect.y};
                 g2.fillPolygon(xPoints, yPoints, 3);
                 g2.dispose();
             }
@@ -292,39 +278,67 @@ public class MainWindow {
         });
         topPanel.add(growthSlider);
 
-        // PANEL Z PUNKTAMI I EXITEM
-        int pointsX = screenWidth - 300; // Pozycja całego bloku (punkty + licznik + exit)
-
-        // Napis "Punkty" (na lewo od licznika punktów)
-        ImageIcon pointsIcon = new ImageIcon("src/projekt_java/punkty.png");
-        JLabel pointsLabel = new JLabel(scaleIcon(pointsIcon, 120, 50));
-        pointsLabel.setBounds(pointsX, (panelHeight - 50) / 2 + 60, 120, 50);
+        // Punkty
+        int pointsX = screenWidth - 300;
+        JLabel pointsLabel = new JLabel(scaleIcon(new ImageIcon("src/projekt_java/punkty.png"), 120, 50));
+        pointsLabel.setBounds(pointsX, topPanelHeight - 60, 120, 50);
         topPanel.add(pointsLabel);
 
-        // Panel z licznikiem punktów
-        JPanel pointsPanel = new JPanel();
-        pointsPanel.setLayout(new BorderLayout());
+        JPanel pointsPanel = new JPanel(new BorderLayout());
         pointsPanel.setBackground(Color.BLACK);
-        pointsPanel.setBounds(pointsX + 130, (panelHeight - 50) / 2 + 60, 80, 50);
-
+        pointsPanel.setBounds(pointsX + 130, topPanelHeight - 60, 80, 50);
         zjedzoneRybyValueLabel = new JLabel(String.valueOf(zjedzoneRybyCount), SwingConstants.CENTER);
         zjedzoneRybyValueLabel.setForeground(Color.YELLOW);
         zjedzoneRybyValueLabel.setFont(new Font("Arial", Font.BOLD, 24));
         pointsPanel.add(zjedzoneRybyValueLabel, BorderLayout.CENTER);
         topPanel.add(pointsPanel);
 
-        // Przycisk "Exit" (WYJŚCIE Z GRY) – po prawej od licznika punktów
-        ImageIcon exitIcon = new ImageIcon("src/projekt_java/exit.png");
-        JButton exitButton = new JButton(scaleIcon(exitIcon, 50, 40));
+        JButton exitButton = new JButton(scaleIcon(new ImageIcon("src/projekt_java/exit.png"), 50, 40));
         makeButtonTransparent(exitButton);
-
         exitButton.setBounds(pointsPanel.getX() + pointsPanel.getWidth() + 10, pointsPanel.getY(), 80, 50);
-        
-        exitButton.addActionListener(e -> System.exit(0)); // Zamknięcie gry
+        exitButton.addActionListener(e -> System.exit(0));
         topPanel.add(exitButton);
 
-        return topPanel;
+        // ---------------- GAME PANEL ----------------
+        int gamePanelHeight = screenHeight - topPanelHeight;
+        BackgroundPanel gamePanel = new BackgroundPanel("src/projekt_java/tło_okienek.png");
+        gamePanel.setBounds(0, topPanelHeight, screenWidth, gamePanelHeight);
+
+     // Dodanie gracza
+        MovableImage movableFish = new MovableImage("src/projekt_java/Sylwia1.png", gamePanel);
+        movableFish.setBounds(100, 100, 120, 80);
+        movableFish.setFocusable(true);
+        gamePanel.add(movableFish);
+
+        // Fokus (upewnij się, że to wywoływane po dodaniu do panelu)
+        SwingUtilities.invokeLater(movableFish::requestFocusInWindow);
+
+        // Dodanie do mainPanel
+        mainPanel.add(topPanel);
+        mainPanel.add(gamePanel);
+        
+     // Ustawienie rybki gracza na środku po renderze
+        SwingUtilities.invokeLater(() -> {
+            int panelWidth = gamePanel.getWidth();
+            int panelHeight = gamePanel.getHeight();
+
+            int fishWidth = movableFish.getWidth();
+            int fishHeight = movableFish.getHeight();
+
+            int startX = (panelWidth - fishWidth) / 2;
+            int startY = (panelHeight - fishHeight) / 2;
+
+            movableFish.setLocation(startX, startY);
+            movableFish.requestFocusInWindow();
+        });
+
+        return mainPanel;
     }
+
+
+
+
+
 
     private JPanel createTopPanelOkno2(JFrame frameToClose) {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -464,6 +478,3 @@ public class MainWindow {
     }
 }
 
-// elo
-
-//benc
