@@ -8,9 +8,10 @@ import javax.swing.Timer;
 
 public class BackgroundPanel extends JPanel {
     private Image backgroundImage;
-    private Timer spawnTimer;
+    private Timer leftSpawnTimer;
+    private Timer rightSpawnTimer;
     private Timer moveTimer;
-    private List<EnemyFish> enemies = new ArrayList<>();
+    public List<EnemyFish> enemies = new ArrayList<>();
     private String[] fishPaths = {
         "src/projekt_java/Mała_ryba.png",
         "src/projekt_java/Średnia_ryba.png",
@@ -23,19 +24,31 @@ public class BackgroundPanel extends JPanel {
         setLayout(null);
         startEnemySpawning();
     }
+    
+    public void stopAllTimers() {
+        if (leftSpawnTimer != null) leftSpawnTimer.stop();
+        if (rightSpawnTimer != null) rightSpawnTimer.stop();
+        if (moveTimer != null) moveTimer.stop();
+    }
 
-    private void startEnemySpawning() {
-        spawnTimer = new Timer(1000, e -> spawnEnemy());
-        spawnTimer.start();
+    public void startEnemySpawning() {
+    	rightSpawnTimer = new Timer(2000, e -> spawnEnemy("right"));
+    	rightSpawnTimer.start();
+        
+    	leftSpawnTimer = new Timer(2000, e -> spawnEnemy("left"));
+    	leftSpawnTimer.start();
 
         moveTimer = new Timer(30, e -> moveEnemies());
         moveTimer.start();
     }
 
-    private void spawnEnemy() {
+    private void spawnEnemy(String side) {
         int panelHeight = getHeight();
-        int panelWidth = getWidth();
-        if (panelHeight == 0 || panelWidth == 0) return; // zabezpieczenie
+        int panelWidth = 0;
+        
+        if (side.equals("right")) {
+        	panelWidth = getWidth();
+        }
 
         Random rand = new Random();
         int index = rand.nextInt(fishPaths.length);
@@ -44,28 +57,51 @@ public class BackgroundPanel extends JPanel {
         int size;
         switch (index) {
             case 0: size = 40; break; // mała
-            case 1: size = 70; break; // średnia
-            case 2: size = 100; break; // duża
+            case 1: size = 100; break; // średnia
+            case 2: size = 160; break; // duża
             default: size = 60;
         }
-
+        
         int y = rand.nextInt(Math.max(1, panelHeight - size));
-        EnemyFish fish = new EnemyFish(path, panelWidth, y, size);
+        String direction = "";
+        if (side == "left") {
+        	direction = "right";
+        }
+        else {
+        	direction = "left";
+        }
+        
+        int x;
+        if (side.equals("left")) {
+            x = -size; // start poza lewą krawędzią
+        } else {
+            x = getWidth(); // start poza prawą krawędzią
+        }
+
+        EnemyFish fish = new EnemyFish(path, x, y, size, direction, getWidth());
+
         enemies.add(fish);
         this.add(fish);
         this.repaint();
     }
 
     private void moveEnemies() {
-        Iterator<EnemyFish> iter = enemies.iterator();
-        while (iter.hasNext()) {
-            EnemyFish fish = iter.next();
-            fish.move();
-            if (fish.isOutOfScreen()) {
-                this.remove(fish);
+    	Iterator<EnemyFish> iter = enemies.iterator();
+    	while (iter.hasNext()) {
+    	    EnemyFish enemy = iter.next();
+    	    if ("left".equals(enemy.direction)) {
+    	    	enemy.move("left");
+    	    }
+    	    else {
+    	    	enemy.move("right");
+    	    }
+    	    
+            if (enemy.isOutOfScreen(enemy.direction)) {
+                this.remove(enemy);
                 iter.remove();
             }
-        }
+    	}
+    	
         this.repaint();
     }
 

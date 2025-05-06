@@ -214,7 +214,7 @@ public class MainWindow {
         // Panel z ikonkami rybek
         JPanel fishPanel = new JPanel(null);
         fishPanel.setBackground(new Color(203, 108, 230));
-        fishPanel.setBounds(0, 0, screenWidth, 70);
+        fishPanel.setBounds(0, 0, screenWidth, 80);
 
         String[] fishIcons = {
             "src/projekt_java/Mała_ryba.png",
@@ -253,7 +253,8 @@ public class MainWindow {
         topPanel.add(growthLabel);
 
         // Suwak wzrostu
-        JSlider growthSlider = new JSlider(0, 100, 50);
+        JSlider growthSlider = new JSlider(0, 100, 0);
+        growthSlider.setEnabled(false);
         growthSlider.setBounds(screenWidth / 3, topPanelHeight - 60, screenWidth / 3, 40);
         growthSlider.setBackground(Color.BLACK);
         growthSlider.setUI(new BasicSliderUI(growthSlider) {
@@ -305,11 +306,13 @@ public class MainWindow {
         gamePanel.setBounds(0, topPanelHeight, screenWidth, gamePanelHeight);
 
      // Dodanie gracza
-        MovableImage movableFish = new MovableImage("src/projekt_java/Sylwia1.png", gamePanel);
+        PlayerFish movableFish = new PlayerFish("src/projekt_java/Sylwia1.png", gamePanel, growthSlider, zjedzoneRybyValueLabel);
         movableFish.setBounds(100, 100, 120, 80);
         movableFish.setFocusable(true);
         gamePanel.add(movableFish);
-
+        
+        //checkCollision(gamePanel.enemies, movableFish);
+        
         // Fokus (upewnij się, że to wywoływane po dodaniu do panelu)
         SwingUtilities.invokeLater(movableFish::requestFocusInWindow);
 
@@ -334,8 +337,6 @@ public class MainWindow {
 
         return mainPanel;
     }
-
-
 
 
 
