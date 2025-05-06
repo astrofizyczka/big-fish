@@ -22,7 +22,8 @@ public class EnemyFish extends JLabel {
         	setIcon(new ImageIcon(scaledImage));
         }
         else {
-        	setIcon(flipImageIconHorizontally(new ImageIcon(scaledImage))); 
+        	setIcon(ImageFlipper.flipImageIconHorizontally(new ImageIcon(scaledImage)));
+ 
         }
         
         setBounds(x, y, size, size);
@@ -45,26 +46,8 @@ public class EnemyFish extends JLabel {
             this.level = 1; // default
         }
     }
-
-    public static ImageIcon flipImageIconHorizontally(ImageIcon icon) {
-        int width = icon.getIconWidth();
-        int height = icon.getIconHeight();
-
-        // Create a buffered image from the ImageIcon
-        BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g2 = bufferedImage.createGraphics();
-        g2.drawImage(icon.getImage(), 0, 0, null);
-        g2.dispose();
-
-        // Flip the image horizontally using AffineTransform
-        AffineTransform tx = AffineTransform.getScaleInstance(-1, 1); // flip X
-        tx.translate(-width, 0); // move back into position
-        AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
-        BufferedImage flippedImage = op.filter(bufferedImage, null);
-
-        return new ImageIcon(flippedImage);
-    }
     
+    //metoda na ruch rybek
     public void move(String direction) {
     	if (direction == "left") {
     		setLocation(getX() - speed, getY());
@@ -74,6 +57,7 @@ public class EnemyFish extends JLabel {
     	}
     }
 
+    //metoda na sprawdzenie czy ryba jest poza ekranem
     public boolean isOutOfScreen(String direction) {
     	if (direction == "left") {
             return getX() + getWidth() < 0 ;

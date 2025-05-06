@@ -13,9 +13,9 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
 public class PlayerFish extends JLabel {
-    private int dx = 0, dy = 0;
+    private int dx = 0, dy = 0; //prędkość ryby w poziomie i w pionie
     private Timer moveTimer;
-    private ImageIcon originalIcon;
+    private ImageIcon originalIcon; 
     private ImageIcon flippedIcon;
     private boolean isFacingRight = false;
 	private JSlider growthSlider;
@@ -25,20 +25,21 @@ public class PlayerFish extends JLabel {
     private JLabel scoreLabel;
     private JPanel parentPanel;
 
-    public PlayerFish(String imagePath, JPanel parentPanel, JSlider growthSlider, JLabel scoreLabel) {
+    public PlayerFish(String imagePath, JPanel parentPanel, JSlider growthSlider, JLabel scoreLabel) { //stworzenie ryby gracza
         this.parentPanel = parentPanel;
         int width = 120;
         int height = 80;
 
-        // Load original and flipped images
-        originalIcon = scaleImageIcon(new ImageIcon(imagePath), width, height);
-        flippedIcon = flipImageIconHorizontally(originalIcon);
+        //załadowanie obrazu ryby oraz stworzenie obrazu ryby przerzuconej w poziomie
+        originalIcon = scaleImageIcon(new ImageIcon(imagePath), width, height); //skalowanie wielkości
+        flippedIcon = ImageFlipper.flipImageIconHorizontally(originalIcon);
 
         setIcon(originalIcon);
         setBounds(100, 100, width, height);
         setupKeyBindings(parentPanel);
 
-        moveTimer = new Timer(16, e -> moveFish());
+        //stworzenie timera do ruchu rybką, który co 16ms wywołuje ruch ryby
+        moveTimer = new Timer(16, e -> moveFish()); 
         moveTimer.start();
         
         this.growthSlider = growthSlider;
@@ -46,30 +47,31 @@ public class PlayerFish extends JLabel {
     }
 
     private void moveFish() {
+    	//obliczanie nowej pozycji ryby
         if (dx != 0 || dy != 0) {
             int newX = getX() + dx;
             int newY = getY() + dy;
             
-            // Granice panelu
+            // ustalenie granic panelu gry
             int panelWidth = parentPanel.getWidth();
             int panelHeight = parentPanel.getHeight();
 
-            // Szerokość i wysokość rybki
+            // szerokość i wysokość rybki
             int fishWidth = getWidth();
             int fishHeight = getHeight();
 
-            // Ogranicz ruch poziomy
+            // ograniczenie ruchu poziomy
             if (newX < 0) newX = 0;
             if (newX + fishWidth > panelWidth) newX = panelWidth - fishWidth;
 
-            // Ogranicz ruch pionowy
+            // ograniczenie ruchu pionowy
             if (newY < 0) newY = 0;
             if (newY + fishHeight > panelHeight) newY = panelHeight - fishHeight;
             
             setLocation(newX, newY);
         }
 
-        // Flip image based on movement direction
+        //odbijanie grafiki ryby w poziomie jeśli zmieniła kierunek płynięcia
         if (dx > 0 && !isFacingRight) {
             setIcon(flippedIcon);
             isFacingRight = true;
@@ -78,37 +80,42 @@ public class PlayerFish extends JLabel {
             isFacingRight = false;
         }
         
-        checkCollision();
+        checkCollision(); //sprawdzanie kolizji
     }
     
     private void checkCollision() {
-        Component[] components = getParent().getComponents();
+        Component[] components = getParent().getComponents(); //Pobiera wszystkie komponenty  znajdujące się w tym samym panelu co PlayerFish 
+        //(czyli jego "rodzicu", np. BackgroundPanel).
 
         for (Component comp : components) {
-            if (comp instanceof EnemyFish && comp != this) {
-                EnemyFish enemy = (EnemyFish) comp;
+            if (comp instanceof EnemyFish && comp != this) { //sprawdzenie w pętli czy dany komponent to wroga ryba i czy nie jest rybą gracza
+                EnemyFish enemy = (EnemyFish) comp; //rzutowanie komponentu do typu EnemyFish, żeby mieć dostęp do jego pól
 
-                Rectangle enemyBounds = enemy.getBounds();
+                Rectangle enemyBounds = enemy.getBounds(); //pobieranie prostokątu opisującego położenie i rozmiar wrofiej ryby
 
+                //obliczenie środka wrogiej ryby
                 int enemyCenterX = enemyBounds.x + enemyBounds.width / 2;
                 int enemyCenterY = enemyBounds.y + enemyBounds.height / 2;
 
-                int horizontalMargin = (int) (enemyBounds.width * 0.8);
-                int verticalMargin = (int) (enemyBounds.height * 0.5);
+                //ustawienie marginesu obszaru kolizji, by obszar ten był większy niż sam środek
+                int horizontalMargin = (int) (enemyBounds.width * 0.4);
+                int verticalMargin = (int) (enemyBounds.height * 0.4);
 
-                // Obszar kolizji = środek ryby ±20%
+                // stworzenie prostokątu reprezentującego obszar kolizji
                 Rectangle collisionZone = new Rectangle(
                     enemyCenterX - horizontalMargin,
                     enemyCenterY - verticalMargin,
                     horizontalMargin * 2,
                     verticalMargin * 2
                 );
-
+                
+                //obliczenie środka ryby gracza
                 int playerCenterX = this.getX() + this.getWidth() / 2;
                 int playerCenterY = this.getY() + this.getHeight() / 2;
 
+                //sprawdzenie czy środek gracza znajduje się w obszarze kolizji
                 if (collisionZone.contains(playerCenterX, playerCenterY)) {
-                    // Determine if the player can eat this fish based on level
+                    //spawdzenie czy gracz może zjeść przeciwnika w zależności od swojegp poziomu
                     boolean canEat = switch (playerLevel) {
                         case 1 -> enemy.level == 1;
                         case 2 -> enemy.level <= 2;
@@ -118,12 +125,12 @@ public class PlayerFish extends JLabel {
 
                     if (canEat) {
                         //System.out.println("Zjedzono rybę poziomu l " + enemy.level);
-
+                    	//jeśli może zjeść to wroga ryba jest usuwana z panelu i listy wrogów 
                         getParent().remove(enemy);
                         ((BackgroundPanel) getParent()).enemies.remove(enemy);
                         getParent().repaint();
 
-                        handleScoring(enemy);
+                        handleScoring(enemy); //aktualizacja punktów
                     } else {
                         //System.out.println("Koniec gry. Kolizja z rybą " + enemy.level);
                         triggerGameOver();
@@ -136,10 +143,12 @@ public class PlayerFish extends JLabel {
     }
     
     private void triggerGameOver() {
+    	//zatrzymanie ruchu
         dx = 0;
         dy = 0;
         moveTimer.stop();
 
+        //pobiera panel gry i zatrzynuje ruch innych ryb
         if (getParent() instanceof BackgroundPanel panel) {
             panel.stopAllTimers();
         }
@@ -150,7 +159,7 @@ public class PlayerFish extends JLabel {
             "Przegrałeś! Czy chcesz zagrać ponownie?",
             "Przegrałeś!",
             JOptionPane.YES_NO_OPTION,
-            JOptionPane.ERROR_MESSAGE,
+            JOptionPane.PLAIN_MESSAGE,
             null,
             options,
             options[0]
@@ -166,7 +175,7 @@ public class PlayerFish extends JLabel {
     private void restartGame() {
         if (!(getParent() instanceof BackgroundPanel panel)) return;
 
-        // usuwanie wrogich ryb
+        // usuwanie wrogich ryb (wizualne i logiczne)
         for (EnemyFish enemy : new ArrayList<>(panel.enemies)) {
             panel.remove(enemy);
         }
@@ -183,7 +192,7 @@ public class PlayerFish extends JLabel {
 
         // reskalowanie ikony do wielkości początkowej
         originalIcon = scaleImageIcon(new ImageIcon("src/projekt_java/Sylwia1.png"), 120, 80);
-        flippedIcon = flipImageIconHorizontally(originalIcon);
+        flippedIcon = ImageFlipper.flipImageIconHorizontally(originalIcon);
         setIcon(originalIcon);
         isFacingRight = false;
 
@@ -200,7 +209,7 @@ public class PlayerFish extends JLabel {
         //System.out.println("restart gry");
     }
    
-    
+    //punktacja
     private void handleScoring(EnemyFish enemy) {
         int pointsEarned = switch (enemy.level) {
             case 1 -> 10;
@@ -212,21 +221,23 @@ public class PlayerFish extends JLabel {
         score += pointsEarned;
         scoreLabel.setText(String.valueOf(score));
 
+        //obliczenie procrocentu procesu zwycięsta i aktualizacja slidera
         int progressPercent = (int) (score / 1000.0 * 100);
         growthSlider.setValue(Math.min(progressPercent, 100));
 
-        // Handle level growth
+        //warunki wzrostu
         if (score >= 500 && playerLevel < 3) {
             grow();
         } else if (score >= 100 && playerLevel < 2) {
             grow();
         }
 
-        // Victory check
+        //sprawdzenie wygranej
         if (score >= 1000) {
             triggerVictory();
         }
     }
+    
     
     private void triggerVictory() {
         dx = 0;
@@ -237,28 +248,40 @@ public class PlayerFish extends JLabel {
             panel.stopAllTimers();
         }
 
-        JOptionPane.showMessageDialog(
+        Object[] options = {"TAK", "NIE"};
+        int result = JOptionPane.showOptionDialog(
             SwingUtilities.getWindowAncestor(this),
-            "Gratulacje! Wygrałeś grę!",
-            "Zwycięstwo!",
-            JOptionPane.INFORMATION_MESSAGE
+            "Wygrałeś!!! Czy chcesz zagrać ponownie?",
+            "Wygrałeś!",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.PLAIN_MESSAGE,
+            null,
+            options,
+            options[0]
         );
 
-        System.exit(0); // or restartGame();
+        if (result == JOptionPane.YES_OPTION) {
+            restartGame();
+        } else {
+            System.exit(0);
+        }
     }
 
     
     private void grow() {
+    	//zwiększa poziom ryby gracza, co wpływa na to że może teraz zjadać większe ryby
         playerLevel++;
         //System.out.println("rośnięcie do poziomu " + playerLevel);
 
+        //obliczanie nowego rozmiaru ryby
         int newWidth = (int) (getWidth() * 1.3);
         int newHeight = (int) (getHeight() * 1.3);
+        //aktualizacja rozmiaru ryby na ekranie
         setBounds(getX(), getY(), newWidth, newHeight);
 
-        // Rescale icons
+        // skalowanie
         originalIcon = scaleImageIcon(originalIcon, newWidth, newHeight);
-        flippedIcon = flipImageIconHorizontally(originalIcon);
+        flippedIcon = ImageFlipper.flipImageIconHorizontally(originalIcon);
         setIcon(isFacingRight ? flippedIcon : originalIcon);
     }
     
@@ -267,42 +290,25 @@ public class PlayerFish extends JLabel {
         return new ImageIcon(scaled);
     }
     
-    public static ImageIcon flipImageIconHorizontally(ImageIcon icon) {
-        int width = icon.getIconWidth();
-        int height = icon.getIconHeight();
-
-        // Create a buffered image from the ImageIcon
-        BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g2 = bufferedImage.createGraphics();
-        g2.drawImage(icon.getImage(), 0, 0, null);
-        g2.dispose();
-
-        // Flip the image horizontally using AffineTransform
-        AffineTransform tx = AffineTransform.getScaleInstance(-1, 1); // flip X
-        tx.translate(-width, 0); // move back into position
-        AffineTransformOp op = new AffineTransformOp(tx, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
-        BufferedImage flippedImage = op.filter(bufferedImage, null);
-
-        return new ImageIcon(flippedImage);
-    }
     
+    //obsługa klawiatury
     private void setupKeyBindings(JComponent comp) {
+    	//mapowanie klawiszy na ciągi znaków a następnie na akcje
         InputMap im = comp.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
         ActionMap am = comp.getActionMap();
 
-        // Key pressed bindings
+        // powiązanie klawiszy ze nazwami akcji
         im.put(KeyStroke.getKeyStroke("pressed LEFT"), "leftPressed");
         im.put(KeyStroke.getKeyStroke("pressed RIGHT"), "rightPressed");
         im.put(KeyStroke.getKeyStroke("pressed UP"), "upPressed");
         im.put(KeyStroke.getKeyStroke("pressed DOWN"), "downPressed");
 
-        // Key released bindings
         im.put(KeyStroke.getKeyStroke("released LEFT"), "leftReleased");
         im.put(KeyStroke.getKeyStroke("released RIGHT"), "rightReleased");
         im.put(KeyStroke.getKeyStroke("released UP"), "upReleased");
         im.put(KeyStroke.getKeyStroke("released DOWN"), "downReleased");
 
-        // Movement actions
+        // akcja
         am.put("leftPressed", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -331,11 +337,12 @@ public class PlayerFish extends JLabel {
             }
         });
 
-        // Stop movement when keys are released
+        // zatrzymanie ruch, gdy klawisze są puszczone
         am.put("leftReleased", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (dx < 0) dx = 0;
+                if (dx < 0) dx = 0; //dzięki warunkowi if (dx < 0) unikamy nadpisania ruchu w przeciwną stronę 
+                					//jeśli użytkownik trzyma dwa klawisze naraz
             }
         });
 

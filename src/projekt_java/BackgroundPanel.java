@@ -22,7 +22,7 @@ public class BackgroundPanel extends JPanel {
     public BackgroundPanel(String bgPath) {
         this.backgroundImage = new ImageIcon(bgPath).getImage();
         setLayout(null);
-        startEnemySpawning();
+        startEnemySpawning(); // uruchamia generowanie wrogów po utworzeniu panelu.
     }
     
     public void stopAllTimers() {
@@ -32,6 +32,7 @@ public class BackgroundPanel extends JPanel {
     }
 
     public void startEnemySpawning() {
+    	//spawnowanie nowych ryb co 2 sekundy po prawej i lewej stronie ekaranu
     	rightSpawnTimer = new Timer(2000, e -> spawnEnemy("right"));
     	rightSpawnTimer.start();
         
@@ -50,6 +51,7 @@ public class BackgroundPanel extends JPanel {
         	panelWidth = getWidth();
         }
 
+        //generowanie randomowej ryby
         Random rand = new Random();
         int index = rand.nextInt(fishPaths.length);
         String path = fishPaths[index];
@@ -62,7 +64,7 @@ public class BackgroundPanel extends JPanel {
             default: size = 60;
         }
         
-        int y = rand.nextInt(Math.max(1, panelHeight - size));
+        int y = rand.nextInt(Math.max(1, panelHeight - size)); //losowanie wysokości spawnowania ryby
         String direction = "";
         if (side == "left") {
         	direction = "right";
@@ -86,6 +88,7 @@ public class BackgroundPanel extends JPanel {
     }
 
     private void moveEnemies() {
+    	//iterator dla listy enemies
     	Iterator<EnemyFish> iter = enemies.iterator();
     	while (iter.hasNext()) {
     	    EnemyFish enemy = iter.next();
@@ -96,6 +99,7 @@ public class BackgroundPanel extends JPanel {
     	    	enemy.move("right");
     	    }
     	    
+    	    //sprawdzanie czy ryba opuściła ekran
             if (enemy.isOutOfScreen(enemy.direction)) {
                 this.remove(enemy);
                 iter.remove();
