@@ -5,20 +5,33 @@ import javax.swing.plaf.basic.BasicSliderUI;
 import java.awt.*;
 
 public class MainWindow {
-    private JFrame mainMenuFrame;
     private int zjedzoneRybyCount = 0;
     private JLabel zjedzoneRybyValueLabel;
+    
+    private JFrame mainFrame;
+    private JPanel cardPanel;
+    private CardLayout cardLayout;
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(MainWindow::new);
+    public void initMainFrame() {
+        mainFrame = new JFrame("Gra Rybki");
+        mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        mainFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        mainFrame.setUndecorated(true);
+
+        cardLayout = new CardLayout();
+        cardPanel = new JPanel(cardLayout);
+        mainFrame.setContentPane(cardPanel);
+
+        // Dodajemy "ekrany"
+        cardPanel.add(createMainMenuPanel(), "menu");
+        cardPanel.add(createTopPanelOkno1(), "okno1");
+        cardPanel.add(createTopPanelOkno3(), "okno3");
+
+        mainFrame.setVisible(true);
+        cardLayout.show(cardPanel, "menu");
     }
 
-    public MainWindow() {
-    	mainMenuFrame = new JFrame("Moje Okno");
-        mainMenuFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        mainMenuFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-        mainMenuFrame.setUndecorated(true);
-
+    private JPanel createMainMenuPanel() {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         int screenWidth = screenSize.width;
         int screenHeight = screenSize.height;
@@ -26,67 +39,48 @@ public class MainWindow {
         JLayeredPane layeredPane = new JLayeredPane();
         layeredPane.setPreferredSize(new Dimension(screenWidth, screenHeight));
 
+        // Tło
         ImageIcon backgroundImage = new ImageIcon("src/projekt_java/tło_menu.png");
         JLabel backgroundLabel = new JLabel(new ImageIcon(backgroundImage.getImage().getScaledInstance(screenWidth, screenHeight, Image.SCALE_SMOOTH)));
         backgroundLabel.setBounds(0, 0, screenWidth, screenHeight);
-        layeredPane.add(backgroundLabel, Integer.valueOf(0)); //ustawienie tła jako najniższą warstwę
+        layeredPane.add(backgroundLabel, Integer.valueOf(0));
 
-
-        // Przyciski w prawym górnym rogu
-        ImageIcon soundIcon = new ImageIcon("src/projekt_java/głośnik.png");
-        JButton soundButton = new JButton(scaleIcon(soundIcon, 60, 40));
-        soundButton.setBounds(screenWidth - 140, 20, 60, 40);
-        makeButtonTransparent(soundButton);
-        layeredPane.add(soundButton, Integer.valueOf(1)); //sprawia, że ikona jest nałożona na tło, a nie leży pod nim
-
+        // Przycisk exit
         ImageIcon exitIcon = new ImageIcon("src/projekt_java/exit.png");
         JButton exitButton = new JButton(scaleIcon(exitIcon, 50, 40));
         exitButton.setBounds(screenWidth - 70, 20, 60, 40);
         makeButtonTransparent(exitButton);
-        exitButton.addActionListener(e -> System.exit(0)); //wyjście z aplikacji
-        layeredPane.add(exitButton, Integer.valueOf(1)); //sprawia, że ikona jest nałożona na tło, a nie leży pod nim
+        exitButton.addActionListener(e -> System.exit(0));
+        layeredPane.add(exitButton, Integer.valueOf(1));
 
-        //Przycisk w lewym rogu
+        // Przycisk info
         ImageIcon infoIcon = new ImageIcon("src/projekt_java/info.png");
         JButton infoButton = new JButton(scaleIcon(infoIcon, 60, 40));
         infoButton.setBounds(20, 20, 60, 40);
         makeButtonTransparent(infoButton);
-        infoButton.addActionListener(e -> showInfoWindow()); //pokazuje okienko inforamcyjne
-        layeredPane.add(infoButton, Integer.valueOf(1)); //sprawia, że ikona jest nałożona na tło, a nie leży pod nim
+        infoButton.addActionListener(e -> showInfoWindow());
+        layeredPane.add(infoButton, Integer.valueOf(1));
 
-        String[] imagePaths = {
-                "src/projekt_java/gruba_ryba.png",
-                "src/projekt_java/szybka_rybka.png",
-                "src/projekt_java/wybierz_swoją_rybkę.png",
-                "src/projekt_java/najszybsze_ryby_w_ławicy.png"
-        };
+        // Przycisk 1 - Gruba Ryba
+        JButton button1 = new JButton(scaleIcon(new ImageIcon("src/projekt_java/gruba_ryba.png"), 400, 200));
+        button1.setBounds(screenWidth / 2 - 430, screenHeight * 3 / 5, 400, 200);
+        makeButtonTransparent(button1);
+        button1.addActionListener(e -> cardLayout.show(cardPanel, "okno1"));
+        layeredPane.add(button1, Integer.valueOf(1));
 
-        int buttonWidth = 400;
-        int buttonHeight = 200;
-        int spacing = 30;
-        int totalWidth = (2 * buttonWidth) + spacing;
+        // Przycisk 2 - Wybierz Rybkę
+        JButton button2 = new JButton(scaleIcon(new ImageIcon("src/projekt_java/wybierz_swoją_rybkę.png"), 400, 200));
+        button2.setBounds(screenWidth / 2 + 30, screenHeight * 3 / 5, 400, 200);
+        makeButtonTransparent(button2);
+        button2.addActionListener(e -> cardLayout.show(cardPanel, "okno3"));
+        layeredPane.add(button2, Integer.valueOf(1));
 
-        int startX = (screenWidth - totalWidth) / 2;
-        int startY = screenHeight / 2; // Przyciski w dolnej części ekranu
+        JPanel mainMenuPanel = new JPanel(new BorderLayout());
+        mainMenuPanel.add(layeredPane, BorderLayout.CENTER);
 
-        for (int i = 0; i < 4; i++) {
-            ImageIcon icon = new ImageIcon(imagePaths[i]);
-            JButton button = new JButton(scaleIcon(icon, buttonWidth, buttonHeight));
-
-            int x = startX + (i % 2) * (buttonWidth + spacing);
-            int y = startY + (i / 2) * (buttonHeight + spacing);
-            button.setBounds(x, y, buttonWidth, buttonHeight);
-
-            makeButtonTransparent(button);
-            int finalI = i + 1;
-            button.addActionListener(e -> openNewWindow(finalI)); //obsługa przycisków
-            layeredPane.add(button, Integer.valueOf(1)); //przyciski nałożone na tło
-        }
-        mainMenuFrame.setContentPane(layeredPane);
-        mainMenuFrame.pack();
-        mainMenuFrame.setLocationRelativeTo(null);
-        mainMenuFrame.setVisible(true);
+        return mainMenuPanel;
     }
+
 
     private void makeButtonTransparent(JButton button) {
         button.setBorderPainted(false);
@@ -100,106 +94,18 @@ public class MainWindow {
         return new ImageIcon(img);
     }
 
-    private void openNewWindow(int windowNumber) {
-        JFrame newFrame = new JFrame("Okno " + windowNumber); //do każdego numeru ładowany jest inny panel
-        newFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        newFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-        newFrame.setUndecorated(true);
-
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        int screenWidth = screenSize.width;
-        int screenHeight = screenSize.height;
-
-        JLayeredPane layeredPane = new JLayeredPane();
-        layeredPane.setPreferredSize(new Dimension(screenWidth, screenHeight));
-
-        ImageIcon backgroundImage = new ImageIcon("src/projekt_java/tło_okienek.png");
-        JLabel backgroundLabel = new JLabel(new ImageIcon(backgroundImage.getImage().getScaledInstance(screenWidth, screenHeight, Image.SCALE_SMOOTH)));
-        backgroundLabel.setBounds(0, 0, screenWidth, screenHeight);
-        layeredPane.add(backgroundLabel, Integer.valueOf(0));
-
-        if (windowNumber == 1) {
-            JPanel topPanel = createTopPanelOkno1(newFrame);
-            layeredPane.add(topPanel, Integer.valueOf(1));
-        } else if (windowNumber == 2) {
-            JPanel topPanel = createTopPanelOkno2(newFrame);
-            layeredPane.add(topPanel, Integer.valueOf(1));
-        } else if (windowNumber == 3) {
-            JPanel topPanel = createTopPanelOkno3(newFrame);
-            layeredPane.add(topPanel, Integer.valueOf(1));
-
-            // Panel dla przycisków rybek
-            JPanel centerPanel = new JPanel(new BorderLayout());
-            centerPanel.setOpaque(false);
-
-            JPanel fishButtonPanel = new JPanel(new GridLayout(2, 2, 20, 20));
-            fishButtonPanel.setOpaque(false);
-
-            String[] imagePaths = {
-                    "src/projekt_java/Sylwia1.png",
-                    "src/projekt_java/Sylwia2.png",
-                    "src/projekt_java/Sylwia3.png",
-                    "src/projekt_java/Sylwia4.png"
-            };
-
-            String[] messages = {
-                    "wybrano żółtą rybkę Sylwię",
-                    "wybrano różową rybkę Młodego",
-                    "wybrano purpurową rybkę Finkę",
-                    "wybrano fioletową rybkę Leona"
-            };
-
-            // ścieżki do imion rybek
-            String[] nameImagePaths = {
-                    "src/projekt_java/Sylwia.png",
-                    "src/projekt_java/Młody.png",
-                    "src/projekt_java/Finka.png",
-                    "src/projekt_java/Leon.png"
-            };
-
-            for (int i = 0; i < imagePaths.length; i++) {
-                ImageIcon buttonIcon = new ImageIcon(imagePaths[i]);
-                JButton rybkaButton = new JButton(scaleIcon(buttonIcon, 200, 150));
-                makeButtonTransparent(rybkaButton);
-
-               //grafika z podpisem każdej rybki
-                ImageIcon nameIcon = new ImageIcon(nameImagePaths[i]);
-                JLabel nameLabel = new JLabel(new ImageIcon(nameIcon.getImage().getScaledInstance(150, 80, Image.SCALE_SMOOTH)), SwingConstants.CENTER);
-
-                int finalI = i;
-                rybkaButton.addActionListener(e ->
-                        JOptionPane.showMessageDialog(newFrame, messages[finalI])
-                );
-
-                //dodanie przycisków i podpisów do panelu
-                JPanel buttonWithLabelPanel = new JPanel();
-                buttonWithLabelPanel.setLayout(new BorderLayout());
-                buttonWithLabelPanel.setOpaque(false);
-                buttonWithLabelPanel.add(rybkaButton, BorderLayout.CENTER);
-                buttonWithLabelPanel.add(nameLabel, BorderLayout.SOUTH);
-
-                fishButtonPanel.add(buttonWithLabelPanel);
-            }
-
-            centerPanel.add(fishButtonPanel, BorderLayout.CENTER);
-            centerPanel.setBounds(screenWidth / 2 - 450, screenHeight / 2 - 300, 900, 600);
-            layeredPane.add(centerPanel, Integer.valueOf(1));
-            
-            
-        } else if (windowNumber == 4) {
-            JPanel topPanel = createTopPanelOkno4(newFrame);
-            layeredPane.add(topPanel, Integer.valueOf(1));
-        }
-
-        newFrame.setContentPane(layeredPane);
-        newFrame.pack();
-        newFrame.setLocationRelativeTo(null);
-        newFrame.setVisible(true);
-        mainMenuFrame.setVisible(false);
-    }
     
+    /*private void switchToCard(int windowNumber) {
+        if (windowNumber == 1) {
+            cardLayout.show(cardPanel, "okno1");
+        } else if (windowNumber == 2) {
+            cardLayout.show(cardPanel, "okno3");
+        }
+    }*/
+
+        
     //tryb gry Gruba ryba
-    private JPanel createTopPanelOkno1(JFrame frameToClose) {
+    private JPanel createTopPanelOkno1() {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         int screenWidth = screenSize.width;
         int screenHeight = screenSize.height;
@@ -245,8 +151,7 @@ public class MainWindow {
         makeButtonTransparent(menuButton);
         menuButton.setBounds(20, topPanelHeight - 60, 120, 50);
         menuButton.addActionListener(e -> { //po kliknęciu zamyka okno i pokazuje menu główne
-            frameToClose.dispose();
-            mainMenuFrame.setVisible(true);
+        	cardLayout.show(cardPanel, "menu");
         });
         topPanel.add(menuButton);
 
@@ -311,7 +216,7 @@ public class MainWindow {
 
         // Dodanie rybki gracza
         PlayerFish movableFish = new PlayerFish("src/projekt_java/Sylwia1.png", gamePanel, growthSlider, zjedzoneRybyValueLabel);
-        movableFish.setBounds(100, 100, 120, 80);
+        //movableFish.setBounds(100, 100, 120, 80);
         movableFish.setFocusable(true);
         gamePanel.add(movableFish);
         SwingUtilities.invokeLater(movableFish::requestFocusInWindow); //focus na rybkę gracza
@@ -338,64 +243,21 @@ public class MainWindow {
         return mainPanel;
     }
 
-    //tryb gry SZYBKA RYBKA
-    private JPanel createTopPanelOkno2(JFrame frameToClose) {
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        int screenWidth = screenSize.width;
-
-        JPanel topPanel = new JPanel();
-        topPanel.setLayout(null);
-        topPanel.setBackground(new Color(203, 108, 230));
-        topPanel.setBounds(0, 0, screenWidth, 80);
-
-        // Przycisk menu
-        ImageIcon menuIcon = new ImageIcon("src/projekt_java/menu.png");
-        JButton menuButton = new JButton(scaleIcon(menuIcon, 100, 40));
-        makeButtonTransparent(menuButton);
-        menuButton.setBounds(20, 20, 100, 40);
-        menuButton.addActionListener(e -> {
-            frameToClose.dispose();
-            mainMenuFrame.setVisible(true);
-        });
-        topPanel.add(menuButton);
-
-        // Przycisk exit
-        ImageIcon exitIcon = new ImageIcon("src/projekt_java/exit.png");
-        JButton exitButton = new JButton(scaleIcon(exitIcon, 50, 40));
-        makeButtonTransparent(exitButton);
-        exitButton.setBounds(screenWidth - 100, 20, 80, 40);
-        exitButton.addActionListener(e -> System.exit(0)); // Wyjście z gry
-        topPanel.add(exitButton);
-
-        // Licznik zjedzonych ryb
-        JPanel licznikPanel = new JPanel();
-        licznikPanel.setLayout(new BorderLayout());
-        licznikPanel.setBackground(Color.BLACK);
-        licznikPanel.setBounds(screenWidth - 180, 20, 60, 40);
-
-        zjedzoneRybyValueLabel = new JLabel(String.valueOf(zjedzoneRybyCount), SwingConstants.CENTER);
-        zjedzoneRybyValueLabel.setForeground(Color.YELLOW);
-        zjedzoneRybyValueLabel.setFont(new Font("Arial", Font.BOLD, 24));
-        licznikPanel.add(zjedzoneRybyValueLabel, BorderLayout.CENTER);
-        topPanel.add(licznikPanel);
-
-        // grafika z tekstem zjedzone ryby
-        ImageIcon zjedzoneRybyIcon = new ImageIcon("src/projekt_java/zjedzone_ryby.png");
-        JLabel zjedzoneRybyLabel = new JLabel(scaleIcon(zjedzoneRybyIcon, 200, 40));
-        zjedzoneRybyLabel.setBounds(screenWidth - 400, 20, 200, 40);
-        topPanel.add(zjedzoneRybyLabel);
-
-        return topPanel;
-    }
     
     //Zakładka Wybierz swoją rybkę
-    private JPanel createTopPanelOkno3(JFrame frameToClose) {
+    private JPanel createTopPanelOkno3() {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         int screenWidth = screenSize.width;
+        int screenHeight = screenSize.height;
 
+        // Główny panel, na którym będziemy układać inne panele
+        BackgroundPanel mainPanel = new BackgroundPanel("src/projekt_java/tło_okienek.png");
+        mainPanel.setLayout(null);
+        mainPanel.setBounds(0, 0, screenWidth, screenHeight);
+        
         // Panel górny
         JPanel topPanel = new JPanel();
-        topPanel.setLayout(null); 
+        topPanel.setLayout(null);
         topPanel.setBackground(new Color(203, 108, 230));
         topPanel.setBounds(0, 0, screenWidth, 80);
 
@@ -405,41 +267,7 @@ public class MainWindow {
         makeButtonTransparent(menuButton);
         menuButton.setBounds(20, 20, 100, 40);
         menuButton.addActionListener(e -> {
-            frameToClose.dispose();
-            mainMenuFrame.setVisible(true);
-        });
-        topPanel.add(menuButton);
-
-        // Przycisk exit
-        ImageIcon exitIcon = new ImageIcon("src/projekt_java/exit.png");
-        JButton exitButton = new JButton(scaleIcon(exitIcon, 50, 40));
-        makeButtonTransparent(exitButton);
-        exitButton.setBounds(screenWidth - 100, 20, 80, 40); 
-        exitButton.addActionListener(e -> System.exit(0)); // Wyjście z gry
-        topPanel.add(exitButton);
-
-        return topPanel;
-    }
-
-    //zakładka Najszybsze ryby w ławicy
-    private JPanel createTopPanelOkno4(JFrame frameToClose) {
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        int screenWidth = screenSize.width;
-
-        // Panel górny
-        JPanel topPanel = new JPanel();
-        topPanel.setLayout(null);
-        topPanel.setBackground(new Color(203, 108, 230));
-        topPanel.setBounds(0, 0, screenWidth, 80); 
-
-        // Przycisk menu
-        ImageIcon menuIcon = new ImageIcon("src/projekt_java/menu.png");
-        JButton menuButton = new JButton(scaleIcon(menuIcon, 100, 40));
-        makeButtonTransparent(menuButton);
-        menuButton.setBounds(20, 20, 100, 40);
-        menuButton.addActionListener(e -> {
-            frameToClose.dispose();
-            mainMenuFrame.setVisible(true);
+        	cardLayout.show(cardPanel, "menu");
         });
         topPanel.add(menuButton);
 
@@ -451,8 +279,75 @@ public class MainWindow {
         exitButton.addActionListener(e -> System.exit(0)); // Wyjście z gry
         topPanel.add(exitButton);
 
-        return topPanel;
+        mainPanel.add(topPanel);
+
+        // Panel z przyciskami rybek, wywołujemy metodę z parametrami
+        JPanel fishSelectionPanel = createFishSelectionPanel(screenWidth, screenHeight);
+        mainPanel.add(fishSelectionPanel);
+
+        return mainPanel;
     }
+
+
+    
+    private JPanel createFishSelectionPanel(int screenWidth, int screenHeight) {
+        // Panel dla przycisków rybek
+        JPanel centerPanel = new JPanel(new BorderLayout());
+        centerPanel.setOpaque(false);
+
+        JPanel fishButtonPanel = new JPanel(new GridLayout(2, 2, 20, 20));
+        fishButtonPanel.setOpaque(false);
+
+        String[] imagePaths = {
+                "src/projekt_java/Sylwia1.png",
+                "src/projekt_java/Sylwia2.png",
+                "src/projekt_java/Sylwia3.png",
+                "src/projekt_java/Sylwia4.png"
+        };
+
+        String[] messages = {
+                "wybrano żółtą rybkę Sylwię",
+                "wybrano różową rybkę Młodego",
+                "wybrano purpurową rybkę Finkę",
+                "wybrano fioletową rybkę Leona"
+        };
+
+        String[] nameImagePaths = {
+                "src/projekt_java/Sylwia.png",
+                "src/projekt_java/Młody.png",
+                "src/projekt_java/Finka.png",
+                "src/projekt_java/Leon.png"
+        };
+
+        for (int i = 0; i < imagePaths.length; i++) {
+            ImageIcon buttonIcon = new ImageIcon(imagePaths[i]);
+            JButton rybkaButton = new JButton(scaleIcon(buttonIcon, 200, 150));
+            makeButtonTransparent(rybkaButton);
+
+            // Grafika z podpisem każdej rybki
+            ImageIcon nameIcon = new ImageIcon(nameImagePaths[i]);
+            JLabel nameLabel = new JLabel(new ImageIcon(nameIcon.getImage().getScaledInstance(150, 80, Image.SCALE_SMOOTH)), SwingConstants.CENTER);
+
+            int finalI = i;
+            rybkaButton.addActionListener(e ->
+                    JOptionPane.showMessageDialog(cardPanel, messages[finalI])
+            );
+
+            // Dodanie przycisków i podpisów do panelu
+            JPanel buttonWithLabelPanel = new JPanel(new BorderLayout());
+            buttonWithLabelPanel.setOpaque(false);
+            buttonWithLabelPanel.add(rybkaButton, BorderLayout.CENTER);
+            buttonWithLabelPanel.add(nameLabel, BorderLayout.SOUTH);
+
+            fishButtonPanel.add(buttonWithLabelPanel);
+        }
+
+        centerPanel.add(fishButtonPanel, BorderLayout.CENTER);
+        centerPanel.setBounds(screenWidth / 2 - 450, screenHeight / 2 - 300, 900, 600);
+
+        return centerPanel;
+    }
+
 
     private void showInfoWindow() {
         JFrame infoFrame = new JFrame("Informacja o grze");
@@ -475,5 +370,14 @@ public class MainWindow {
         infoFrame.setLocationRelativeTo(null);
         infoFrame.setVisible(true);
     }
+    
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            MainWindow window = new MainWindow();
+            window.initMainFrame();
+        });
+    }
+    
 }
 

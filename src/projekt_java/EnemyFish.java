@@ -8,7 +8,6 @@ import java.awt.image.BufferedImage;
 
 public class EnemyFish extends JLabel {
     private int speed;
-    private int width, height;
     public int x, y;
     public String direction;
     public int panelWidth;
@@ -28,15 +27,13 @@ public class EnemyFish extends JLabel {
         
         setBounds(x, y, size, size);
 
-        this.width = size;
-        this.height = size;
         this.speed = 2 + (int)(Math.random() * 3); // losowa prędkość od 2 do 4
         this.direction = direction;
         this.panelWidth = panelWidth;
         this.x = x;
         this.y = y;
         
-        if (imagePath.contains("Mała_ryba")) {
+        if (imagePath.contains("Mała_ryba")) { //określenie poziomu wrogiej ryby
             this.level = 1;
         } else if (imagePath.contains("Średnia_ryba")) {
             this.level = 2;

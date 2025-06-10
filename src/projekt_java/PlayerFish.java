@@ -6,6 +6,7 @@ import java.awt.Component;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
@@ -81,10 +82,11 @@ public class PlayerFish extends JLabel {
         }
         
         checkCollision(); //sprawdzanie kolizji
+        Toolkit.getDefaultToolkit().sync(); 
     }
     
     private void checkCollision() {
-        Component[] components = getParent().getComponents(); //Pobiera wszystkie komponenty  znajdujące się w tym samym panelu co PlayerFish 
+        Component[] components = getParent().getComponents(); //Pobiera wszystkie komponenty znajdujące się w tym samym panelu co PlayerFish 
         //(czyli jego "rodzicu", np. BackgroundPanel).
 
         for (Component comp : components) {
@@ -128,7 +130,7 @@ public class PlayerFish extends JLabel {
                     	//jeśli może zjeść to wroga ryba jest usuwana z panelu i listy wrogów 
                         getParent().remove(enemy);
                         ((BackgroundPanel) getParent()).enemies.remove(enemy);
-                        getParent().repaint();
+                        getParent().repaint(); //wymuszenie przerysowania BackgroundPanel, by ryba zniknęła od razu
 
                         handleScoring(enemy); //aktualizacja punktów
                     } else {
@@ -221,7 +223,7 @@ public class PlayerFish extends JLabel {
         score += pointsEarned;
         scoreLabel.setText(String.valueOf(score));
 
-        //obliczenie procrocentu procesu zwycięsta i aktualizacja slidera
+        //obliczenie procentu procesu zwycięstwa i aktualizacja slidera
         int progressPercent = (int) (score / 1000.0 * 100);
         growthSlider.setValue(Math.min(progressPercent, 100));
 

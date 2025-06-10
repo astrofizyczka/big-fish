@@ -46,10 +46,7 @@ public class BackgroundPanel extends JPanel {
     private void spawnEnemy(String side) {
         int panelHeight = getHeight();
         int panelWidth = 0;
-        
-        if (side.equals("right")) {
-        	panelWidth = getWidth();
-        }
+       
 
         //generowanie randomowej ryby
         Random rand = new Random();
@@ -61,10 +58,10 @@ public class BackgroundPanel extends JPanel {
             case 0: size = 40; break; // mała
             case 1: size = 100; break; // średnia
             case 2: size = 160; break; // duża
-            default: size = 60;
+            default: size = 40;
         }
         
-        int y = rand.nextInt(Math.max(1, panelHeight - size)); //losowanie wysokości spawnowania ryby
+        int y = rand.nextInt(panelHeight - size); //losowanie wysokości spawnowania ryby
         String direction = "";
         if (side == "left") {
         	direction = "right";
@@ -107,6 +104,7 @@ public class BackgroundPanel extends JPanel {
     	}
     	
         this.repaint();
+        Toolkit.getDefaultToolkit().sync(); 
     }
 
     @Override
