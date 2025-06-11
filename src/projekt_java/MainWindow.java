@@ -185,7 +185,7 @@ public class MainWindow {
         
         JLabel pointsLabel = new JLabel(scaleIcon(new ImageIcon("src/projekt_java/punkty.png"), 120, 50));
         pointsLabel.setBounds(pointsX, topPanelHeight - 60, 120, 50);
-        topPanel.add(pointsLabel); //umieszczenie grafiki z napisem ounkty na topPanelu
+        topPanel.add(pointsLabel); //umieszczenie grafiki z napisem punkty na topPanelu
 
         JPanel pointsPanel = new JPanel(new BorderLayout());
         pointsPanel.setBackground(Color.BLACK);
@@ -220,7 +220,7 @@ public class MainWindow {
         menuButton.setBounds(20, topPanelHeight - 60, 120, 50);
         menuButton.addActionListener(e -> { //po kliknęciu zamyka okno i pokazuje menu główne
         	movableFish.triggerMainMenu();
-        	movableFish.restartGame();
+        	movableFish.restartGame1();
         	cardLayout.show(cardPanel, "menu");
         });
         topPanel.add(menuButton);
@@ -284,7 +284,7 @@ public class MainWindow {
 
         mainPanel.add(topPanel);
 
-        // Panel z przyciskami rybek, wywołujemy metodę z parametrami
+        // Panel z przyciskami rybek
         JPanel fishSelectionPanel = createFishSelectionPanel(screenWidth, screenHeight);
         mainPanel.add(fishSelectionPanel);
 
@@ -379,7 +379,7 @@ public class MainWindow {
     
 
     public static void main(String[] args) {
-    	System.setProperty("sun.java2d.uiScale", "1.0");
+    	System.setProperty("sun.java2d.uiScale", "1.0"); //wymuszenie skalowania na 100% na linuxie
 
         SwingUtilities.invokeLater(() -> {
             MainWindow window = new MainWindow();

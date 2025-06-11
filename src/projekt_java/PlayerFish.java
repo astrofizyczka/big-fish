@@ -92,7 +92,7 @@ public class PlayerFish extends JLabel {
         }
         
         checkCollision(); //sprawdzanie kolizji
-        Toolkit.getDefaultToolkit().sync(); 
+        Toolkit.getDefaultToolkit().sync(); //płynny ruch na linuxie
     }
     
     private void checkCollision() {
@@ -164,6 +164,8 @@ public class PlayerFish extends JLabel {
         if (getParent() instanceof BackgroundPanel panel) {
             panel.stopAllTimers();
         }
+        
+        
     }
     
     private void triggerGameOver() {
@@ -227,6 +229,38 @@ public class PlayerFish extends JLabel {
 
         moveTimer.start();
         panel.startEnemySpawning();
+        panel.repaint();
+    }
+    
+    public void restartGame1() {
+        if (!(getParent() instanceof BackgroundPanel panel)) return;
+
+        // usuwanie wrogich ryb (wizualne i logiczne)
+        for (EnemyFish enemy : new ArrayList<>(panel.enemies)) {
+            panel.remove(enemy);
+        }
+        panel.enemies.clear();
+
+        // restartowanie statystyk ryby gracza
+        playerLevel = 1;
+        growthCount = 0;
+        setBounds(panel.getWidth() / 2, panel.getHeight() / 2, 120, 80); // ustawienie początkowej pozycji
+        
+        score = 0;
+        scoreLabel.setText(String.valueOf(score)); //restartowanie liczby punktów
+
+
+        // reskalowanie ikony do wielkości początkowej
+        originalIcon = scaleImageIcon(new ImageIcon("src/projekt_java/Sylwia1.png"), 120, 80);
+        flippedIcon = ImageFlipper.flipImageIconHorizontally(originalIcon);
+        setIcon(originalIcon);
+        isFacingRight = false;
+
+        // reset slidera
+        if (growthSlider != null) {
+            growthSlider.setValue(0);
+        }
+
         panel.repaint();
     }
    

@@ -104,7 +104,7 @@ public class BackgroundPanel extends JPanel {
     	}
     	
         this.repaint();
-        Toolkit.getDefaultToolkit().sync(); 
+        Toolkit.getDefaultToolkit().sync(); //płynny ruch pozostałych ryb
     }
 
     @Override
