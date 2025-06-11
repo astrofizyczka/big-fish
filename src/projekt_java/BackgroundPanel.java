@@ -45,7 +45,7 @@ public class BackgroundPanel extends JPanel {
 
     private void spawnEnemy(String side) {
         int panelHeight = getHeight();
-        int panelWidth = 0;
+        //int panelWidth = 0;
        
 
         //generowanie randomowej ryby

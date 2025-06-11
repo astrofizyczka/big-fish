@@ -47,6 +47,16 @@ public class PlayerFish extends JLabel {
         this.scoreLabel = scoreLabel;
     }
 
+    public void updateFishImage(String newImagePath) {
+        int width = 120;
+        int height = 80;
+	
+    	this.originalIcon = scaleImageIcon(new ImageIcon(newImagePath), width, height); //skalowanie wielkości
+        this.flippedIcon = ImageFlipper.flipImageIconHorizontally(originalIcon);
+
+        setIcon(originalIcon);
+    }
+    
     private void moveFish() {
     	//obliczanie nowej pozycji ryby
         if (dx != 0 || dy != 0) {
@@ -90,7 +100,7 @@ public class PlayerFish extends JLabel {
         //(czyli jego "rodzicu", np. BackgroundPanel).
 
         for (Component comp : components) {
-            if (comp instanceof EnemyFish && comp != this) { //sprawdzenie w pętli czy dany komponent to wroga ryba i czy nie jest rybą gracza
+            if (comp instanceof EnemyFish) { //sprawdzenie w pętli czy dany komponent to wroga ryba i czy nie jest rybą gracza
                 EnemyFish enemy = (EnemyFish) comp; //rzutowanie komponentu do typu EnemyFish, żeby mieć dostęp do jego pól
 
                 Rectangle enemyBounds = enemy.getBounds(); //pobieranie prostokątu opisującego położenie i rozmiar wrofiej ryby
@@ -144,6 +154,18 @@ public class PlayerFish extends JLabel {
         }
     }
     
+    public void triggerMainMenu() {
+    	//zatrzymanie ruchu
+        dx = 0;
+        dy = 0;
+        moveTimer.stop();
+
+        //pobiera panel gry i zatrzynuje ruch innych ryb
+        if (getParent() instanceof BackgroundPanel panel) {
+            panel.stopAllTimers();
+        }
+    }
+    
     private void triggerGameOver() {
     	//zatrzymanie ruchu
         dx = 0;
@@ -174,7 +196,7 @@ public class PlayerFish extends JLabel {
         }
     }
     
-    private void restartGame() {
+    public void restartGame() {
         if (!(getParent() instanceof BackgroundPanel panel)) return;
 
         // usuwanie wrogich ryb (wizualne i logiczne)
@@ -203,12 +225,9 @@ public class PlayerFish extends JLabel {
             growthSlider.setValue(0);
         }
 
-        // restart timerów ruchu
         moveTimer.start();
         panel.startEnemySpawning();
         panel.repaint();
-
-        //System.out.println("restart gry");
     }
    
     //punktacja

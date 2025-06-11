@@ -11,6 +11,8 @@ public class MainWindow {
     private JFrame mainFrame;
     private JPanel cardPanel;
     private CardLayout cardLayout;
+    private String playerImagePath;
+    private PlayerFish movableFish;
 
     public void initMainFrame() {
         mainFrame = new JFrame("Gra Rybki");
@@ -22,13 +24,15 @@ public class MainWindow {
         cardPanel = new JPanel(cardLayout);
         mainFrame.setContentPane(cardPanel);
 
+        playerImagePath = "src/projekt_java/Sylwia1.png";
         // Dodajemy "ekrany"
+        cardPanel.add(chooseYourFishMode(), "okno3");
         cardPanel.add(createMainMenuPanel(), "menu");
-        cardPanel.add(createTopPanelOkno1(), "okno1");
-        cardPanel.add(createTopPanelOkno3(), "okno3");
+        cardPanel.add(bigFishMode(), "okno1");
 
         mainFrame.setVisible(true);
         cardLayout.show(cardPanel, "menu");
+        movableFish.triggerMainMenu();
     }
 
     private JPanel createMainMenuPanel() {
@@ -65,7 +69,14 @@ public class MainWindow {
         JButton button1 = new JButton(scaleIcon(new ImageIcon("src/projekt_java/gruba_ryba.png"), 400, 200));
         button1.setBounds(screenWidth / 2 - 430, screenHeight * 3 / 5, 400, 200);
         makeButtonTransparent(button1);
-        button1.addActionListener(e -> cardLayout.show(cardPanel, "okno1"));
+        button1.addActionListener(e -> {
+            if (movableFish != null) {
+            	movableFish.triggerMainMenu();
+            	movableFish.restartGame();
+            	movableFish.updateFishImage(playerImagePath); // update to selected image
+            }
+            cardLayout.show(cardPanel, "okno1");
+        });
         layeredPane.add(button1, Integer.valueOf(1));
 
         // Przycisk 2 - Wybierz Rybkę
@@ -94,18 +105,9 @@ public class MainWindow {
         return new ImageIcon(img);
     }
 
-    
-    /*private void switchToCard(int windowNumber) {
-        if (windowNumber == 1) {
-            cardLayout.show(cardPanel, "okno1");
-        } else if (windowNumber == 2) {
-            cardLayout.show(cardPanel, "okno3");
-        }
-    }*/
 
-        
     //tryb gry Gruba ryba
-    private JPanel createTopPanelOkno1() {
+    private JPanel bigFishMode() {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         int screenWidth = screenSize.width;
         int screenHeight = screenSize.height;
@@ -145,15 +147,6 @@ public class MainWindow {
             fishPanel.add(fishButton);
         }
         topPanel.add(fishPanel); //do górnego panelu zostaje dodany panel z grafikami ryb
-
-        // Przycisk "Menu"
-        JButton menuButton = new JButton(scaleIcon(new ImageIcon("src/projekt_java/menu.png"), 120, 50));
-        makeButtonTransparent(menuButton);
-        menuButton.setBounds(20, topPanelHeight - 60, 120, 50);
-        menuButton.addActionListener(e -> { //po kliknęciu zamyka okno i pokazuje menu główne
-        	cardLayout.show(cardPanel, "menu");
-        });
-        topPanel.add(menuButton);
 
         // Wzrost rybki
         JLabel growthLabel = new JLabel(scaleIcon(new ImageIcon("src/projekt_java/wzrost_rybki.png"), 150, 50));
@@ -215,11 +208,22 @@ public class MainWindow {
         gamePanel.setBounds(0, topPanelHeight, screenWidth, gamePanelHeight);
 
         // Dodanie rybki gracza
-        PlayerFish movableFish = new PlayerFish("src/projekt_java/Sylwia1.png", gamePanel, growthSlider, zjedzoneRybyValueLabel);
+        movableFish = new PlayerFish(playerImagePath, gamePanel, growthSlider, zjedzoneRybyValueLabel);
         //movableFish.setBounds(100, 100, 120, 80);
         movableFish.setFocusable(true);
         gamePanel.add(movableFish);
         SwingUtilities.invokeLater(movableFish::requestFocusInWindow); //focus na rybkę gracza
+        
+        // Przycisk "Menu"
+        JButton menuButton = new JButton(scaleIcon(new ImageIcon("src/projekt_java/menu.png"), 120, 50));
+        makeButtonTransparent(menuButton);
+        menuButton.setBounds(20, topPanelHeight - 60, 120, 50);
+        menuButton.addActionListener(e -> { //po kliknęciu zamyka okno i pokazuje menu główne
+        	movableFish.triggerMainMenu();
+        	movableFish.restartGame();
+        	cardLayout.show(cardPanel, "menu");
+        });
+        topPanel.add(menuButton);
 
         // dodanie topPanelu i gamePanelu do mainPanelu
         mainPanel.add(topPanel);
@@ -245,13 +249,12 @@ public class MainWindow {
 
     
     //Zakładka Wybierz swoją rybkę
-    private JPanel createTopPanelOkno3() {
+    private JPanel chooseYourFishMode() {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         int screenWidth = screenSize.width;
         int screenHeight = screenSize.height;
 
-        // Główny panel, na którym będziemy układać inne panele
-        BackgroundPanel mainPanel = new BackgroundPanel("src/projekt_java/tło_okienek.png");
+        ChooseYourFishPanel mainPanel = new ChooseYourFishPanel("src/projekt_java/tło_okienek.png");
         mainPanel.setLayout(null);
         mainPanel.setBounds(0, 0, screenWidth, screenHeight);
         
@@ -330,7 +333,10 @@ public class MainWindow {
 
             int finalI = i;
             rybkaButton.addActionListener(e ->
-                    JOptionPane.showMessageDialog(cardPanel, messages[finalI])
+	            {
+	            	JOptionPane.showMessageDialog(cardPanel, messages[finalI]);
+	            	playerImagePath = imagePaths[finalI];
+	            }   
             );
 
             // Dodanie przycisków i podpisów do panelu
@@ -352,17 +358,17 @@ public class MainWindow {
     private void showInfoWindow() {
         JFrame infoFrame = new JFrame("Informacja o grze");
         infoFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        infoFrame.setSize(400, 300);
+        infoFrame.setSize(400, 220);
         infoFrame.setResizable(false);
 
         JPanel infoPanel = new JPanel();
         infoPanel.setLayout(new BorderLayout());
 
-        JLabel infoLabel = new JLabel("<html><h2>Gra w ryby!</h2><p>Zasady są proste. Na dobry początek wybierz tryb w któym chcesz grać! Możesz zostać grubą rybą albo szybką rybką!</h2><p>W trybie gruba ryba musisz zjadać ryby mniejsze od siebie i uciekać przed rybami większymi od ciebie. Uważaj, żeby cię nie zjadły! Wtedy gra się kończy:(</h2><p>W trybie szybka rybka, liczy się twój refleks, szybkość, czas i ilość zjedzonych w tym czasie małych rybek!</h2><p>Możesz też wybrać swoją rybkę, a twoje wyniki regularnie zapisują sie w tabeli zwycięzców!</p></html>", SwingConstants.CENTER);
+        JLabel infoLabel = new JLabel("<html><h2>Gra w ryby!</h2><p>Zasady są proste. Zjadaj mniejszych od siebie i unikaj większych. W oceanie rządzą brutalne prawa natury! Gdy zje cię większa ryba gra się kończy! Zdobądź 1000 punktów i zostań królem tego zbiornika wodnego!</h2><p>PS: Możesz też wybrać swoją rybkę!</p></html>", SwingConstants.CENTER);
         infoLabel.setFont(new Font("Arial", Font.PLAIN, 16));
         infoPanel.add(infoLabel, BorderLayout.CENTER);
 
-        JButton closeButton = new JButton("Powodzenia;)");
+        JButton closeButton = new JButton("Powodzenia ;)");
         closeButton.addActionListener(e -> infoFrame.dispose());
         infoPanel.add(closeButton, BorderLayout.SOUTH);
 
@@ -373,6 +379,8 @@ public class MainWindow {
     
 
     public static void main(String[] args) {
+    	System.setProperty("sun.java2d.uiScale", "1.0");
+
         SwingUtilities.invokeLater(() -> {
             MainWindow window = new MainWindow();
             window.initMainFrame();
